@@ -1,0 +1,119 @@
+{% extends  "viewer/base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container-fluid">
+    <!-- Content here -->
+    <!-- <p>{% static 'viewer/BSES/purchase_order/dab.png' %}</p> -->
+    <div class="row">
+        <div class="col-sm-3">
+            Side bar
+        </div>
+        <div class="col-sm-9">
+            <div class="card">
+                <div class="card-body">
+                    <div id="my_pdf_viewer">
+                        <div id="canvas_container">
+                            <canvas id="pdf_renderer"></canvas>
+                        </div>
+
+                        <div id="navigation_controls" class="d-flex justify-content-center mt-3">
+                            <button id="go_previous" class="btn btn-outline-primary">Previous</button>
+                            <input id="current_page" class="form-control w-25 ms-1" value="1" type="number" />
+                            <button id="go_next" class="btn btn-outline-primary ms-1">Next</button>
+                        </div>
+
+                        <div id="zoom_controls" class="d-flex justify-content-center mt-2">
+                            <button id="zoom_in" class="btn btn-outline-danger">+</button>
+                            <button id="zoom_out" class="btn btn-outline-danger ms-1">-</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var myState = {
+        pdf: null,
+        currentPage: 1,
+        zoom: 1
+    }
+    pdfjsLib.getDocument('{% url "viewer:view_pdf" "purchase_order" "po_01" %}').then((pdf) => {
+        myState.pdf = pdf;
+        render();
+    });
+    function render() {
+        myState.pdf.getPage(myState.currentPage).then((page) => {
+
+            var canvas = document.getElementById("pdf_renderer");
+            var ctx = canvas.getContext('2d');
+
+            var viewport = page.getViewport(myState.zoom);
+
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+
+            page.render({
+                canvasContext: ctx,
+                viewport: viewport
+            });
+        });
+    }
+    // previous button
+    document.getElementById('go_previous')
+        .addEventListener('click', (e) => {
+            if (myState.pdf == null || myState.currentPage == 1)
+                return;
+
+            myState.currentPage -= 1;
+            document.getElementById("current_page").value = myState.currentPage;
+            render();
+        });
+    // next button
+    document.getElementById('go_next')
+        .addEventListener('click', (e) => {
+            if (myState.pdf == null || myState.currentPage > myState.pdf._pdfInfo.numPages)
+                return;
+
+            myState.currentPage += 1;
+            document.getElementById("current_page").value = myState.currentPage;
+            render();
+        });
+    // current page
+    document.getElementById('current_page')
+        .addEventListener('keypress', (e) => {
+            if (myState.pdf == null) return;
+
+            // Get key code
+            var code = (e.keyCode ? e.keyCode : e.which);
+
+            // If key code matches that of the Enter key
+            if (code == 13) {
+                var desiredPage = document.getElementById('current_page').valueAsNumber;
+
+                if (desiredPage >= 1 && desiredPage <= myState.pdf._pdfInfo.numPages) {
+                    myState.currentPage = desiredPage;
+                    document.getElementById("current_page").value = desiredPage;
+                    render();
+                }
+            }
+        });
+    // zoom in
+    document.getElementById('zoom_in')
+        .addEventListener('click', (e) => {
+            if (myState.pdf == null) return;
+            myState.zoom += 0.5;
+
+            render();
+        });
+    // zoom out
+    document.getElementById('zoom_out')
+        .addEventListener('click', (e) => {
+            if (myState.pdf == null) return;
+            myState.zoom -= 0.5;
+
+            render();
+        });
+</script>
+{% endblock content %}

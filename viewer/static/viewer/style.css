@@ -1,0 +1,10 @@
+#canvas_container {
+    background: #333;
+    text-align: center;
+    overflow-y: auto;
+    height: 75vh;
+}
+
+#current_page {
+    display: inline-block;
+}
