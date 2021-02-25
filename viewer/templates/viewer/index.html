@@ -4,10 +4,30 @@
 
 <div class="container-fluid">
     <!-- Content here -->
-    <!-- <p>{% static 'viewer/BSES/purchase_order/dab.png' %}</p> -->
     <div class="row">
         <div class="col-sm-3">
-            Side bar
+            <div class="card">
+                <div class="card-body">
+                    <div id="tree">
+                        <ul>
+                            <li>Purchase Order</li>
+                            <ul>
+                                <li>po_01</li>
+                                <li>po_02</li>
+                                <li>po_03</li>
+                                <li>po_04</li>
+                                <li>po_05</li>
+                            </ul>>
+                            <li>Work Order</li>
+                            <ul>
+                                <li>wo_01</li>
+                                <li>wo_02</li>
+                                <li>wo_03</li>
+                            </ul>>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="col-sm-9">
             <div class="card">
@@ -33,87 +53,131 @@
         </div>
     </div>
 </div>
+<script src="{% static 'viewer/js/script.js' %}"></script>
 <script>
-    var myState = {
-        pdf: null,
-        currentPage: 1,
-        zoom: 1
-    }
-    pdfjsLib.getDocument('{% url "viewer:view_pdf" "purchase_order" "po_01" %}').then((pdf) => {
-        myState.pdf = pdf;
-        render();
-    });
-    function render() {
-        myState.pdf.getPage(myState.currentPage).then((page) => {
-
-            var canvas = document.getElementById("pdf_renderer");
-            var ctx = canvas.getContext('2d');
-
-            var viewport = page.getViewport(myState.zoom);
-
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-
-            page.render({
-                canvasContext: ctx,
-                viewport: viewport
-            });
-        });
-    }
-    // previous button
-    document.getElementById('go_previous')
-        .addEventListener('click', (e) => {
-            if (myState.pdf == null || myState.currentPage == 1)
-                return;
-
-            myState.currentPage -= 1;
-            document.getElementById("current_page").value = myState.currentPage;
-            render();
-        });
-    // next button
-    document.getElementById('go_next')
-        .addEventListener('click', (e) => {
-            if (myState.pdf == null || myState.currentPage > myState.pdf._pdfInfo.numPages)
-                return;
-
-            myState.currentPage += 1;
-            document.getElementById("current_page").value = myState.currentPage;
-            render();
-        });
-    // current page
-    document.getElementById('current_page')
-        .addEventListener('keypress', (e) => {
-            if (myState.pdf == null) return;
-
-            // Get key code
-            var code = (e.keyCode ? e.keyCode : e.which);
-
-            // If key code matches that of the Enter key
-            if (code == 13) {
-                var desiredPage = document.getElementById('current_page').valueAsNumber;
-
-                if (desiredPage >= 1 && desiredPage <= myState.pdf._pdfInfo.numPages) {
-                    myState.currentPage = desiredPage;
-                    document.getElementById("current_page").value = desiredPage;
-                    render();
-                }
+    $(function () {
+        var jsonData = [
+            {
+                id: 1,
+                text: "Purchase Order",
+                state: {
+                    selected: true
+                },
+                children: [
+                    {
+                        id: 2,
+                        text: "po_01",
+                        icon: "jstree-file",
+                        state: {
+                            selected: false
+                        },
+                    },
+                    {
+                        id: 3,
+                        text: "po_02",
+                        icon: "jstree-file",
+                        state: {
+                            selected: false
+                        },
+                    },
+                    {
+                        id: 4,
+                        text: "po_03",
+                        icon: "jstree-file",
+                        state: {
+                            selected: false
+                        },
+                    },
+                    {
+                        id: 5,
+                        text: "po_04",
+                        icon: "jstree-file",
+                        state: {
+                            selected: false
+                        },
+                    },
+                    {
+                        id: 6,
+                        text: "po_05",
+                        icon: "jstree-file",
+                        state: {
+                            selected: false
+                        },
+                    }
+                ]
+            },
+            {
+                id: 7,
+                text: "Work Order",
+                state: {
+                    selected: false
+                },
+                children: [
+                    {
+                        id: 8,
+                        text: "wo_01",
+                        icon: "jstree-file",
+                        state: {
+                            selected: false
+                        },
+                    },
+                    {
+                        id: 9,
+                        text: "wo_02",
+                        icon: "jstree-file",
+                        state: {
+                            selected: false
+                        },
+                    },
+                    {
+                        id: 10,
+                        text: "wo_03",
+                        icon: "jstree-file",
+                        state: {
+                            selected: false
+                        },
+                    },
+                ]
             }
-        });
-    // zoom in
-    document.getElementById('zoom_in')
-        .addEventListener('click', (e) => {
-            if (myState.pdf == null) return;
-            myState.zoom += 0.5;
-
-            render();
-        });
-    // zoom out
-    document.getElementById('zoom_out')
-        .addEventListener('click', (e) => {
-            if (myState.pdf == null) return;
-            myState.zoom -= 0.5;
-
-            render();
-        });
+        ];
+        $('#tree')
+            .on('changed.jstree', function (e, data) {
+                var objNode = data.instance.get_node(data.selected);
+                console.log(objNode.text);
+                switch (objNode.text) {
+                    case "po_01":
+                        loadPdf('{% url "viewer:view_pdf" "purchase_order" "po_01" %}');
+                        break;
+                    case "po_02":
+                        loadPdf('{% url "viewer:view_pdf" "purchase_order" "po_02" %}');
+                        break;
+                    case "po_03":
+                        loadPdf('{% url "viewer:view_pdf" "purchase_order" "po_03" %}');
+                        break;
+                    case "po_04":
+                        loadPdf('{% url "viewer:view_pdf" "purchase_order" "po_04" %}');
+                        break;
+                    case "po_05":
+                        loadPdf('{% url "viewer:view_pdf" "purchase_order" "po_05" %}');
+                        break;
+                    case "wo_01":
+                        loadPdf('{% url "viewer:view_pdf" "work_order" "wo_01" %}');
+                        break;
+                    case "wo_02":
+                        loadPdf('{% url "viewer:view_pdf" "work_order" "wo_02" %}');
+                        break;
+                    case "wo_03":
+                        loadPdf('{% url "viewer:view_pdf" "work_order" "wo_03" %}');
+                        break;
+                    default:
+                    // code block
+                }
+            })
+            .jstree({
+                core: {
+                    data: jsonData
+                }
+            });
+    });
 </script>
 {% endblock content %}
